@@ -131,12 +131,11 @@ void ResourcesServer::stop()
 {
     qInfo() << "Сервер выключен";
     _running = false;
-    for (int i = 0; i < _clients.size(); i++)
+    for (auto& cl : _clients.keys())
     {
-        QTcpSocket* client = _clients.keys()[i];
-        client->disconnectFromHost();
-        client->deleteLater();
-        _clients.remove(client);
+        cl->disconnectFromHost();
+        cl->deleteLater();
+        _clients.remove(cl);
     }
     freeResources();
     _bannedUsers.clear();
