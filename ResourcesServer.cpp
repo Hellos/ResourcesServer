@@ -27,7 +27,14 @@ ResourcesServer::~ResourcesServer()
 
 void ResourcesServer::setPort(int port)
 {
-    _port = port;
+    if (port < 0 || port > 65535)
+    {
+        _port = 0;
+    }
+    else
+    {
+        _port = port;
+    }
 }
 
 int ResourcesServer::port() const
@@ -64,7 +71,14 @@ QStringList ResourcesServer::permittedUsers() const
 
 void ResourcesServer::setZTime(int ms)
 {
-    _zTime = ms;
+    if (_zTime < 0)
+    {
+        _zTime = 30;
+    }
+    else
+    {
+        _zTime = ms;
+    }
 }
 
 int ResourcesServer::zTime() const
@@ -298,9 +312,9 @@ void ResourcesServer::loadSettings()
     QSettings settings(QCoreApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
 
     settings.beginGroup("Server");
-    _port        = settings.value("Port", 90).toInt();
-    _clientLimit = settings.value("ClientLimit", 20).toInt();
-    _zTime       = settings.value("RequestTime", 30000).toInt();
+    setPort(settings.value("Port", 90).toInt());
+    setClientLimit(settings.value("ClientLimit", 20).toInt());
+    setZTime(settings.value("RequestTime", 30000).toInt());
     settings.endGroup();
 
     settings.beginGroup("PermittedUsers");
