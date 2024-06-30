@@ -93,11 +93,13 @@ void ResourcesServer::freeResources()
         QTcpSocket* tmp = _clients.key(_resources[i], nullptr);
         if (!(_resources[i] == "") && tmp && tmp->isValid())
         {
-            sendResponse(_clients.key(_resources[i]), _resources[i], i + 1, 0);
+            sendResponse(_clients.key(_resources[i]), _resources[i], i + 1, 2);
             qInfo() << "Ресурс" << i + 1 << "был освобождён";
         }
         _resources[i] = "";
+        _resourcesTimers[i]->stop();
     }
+    _resourceTimes.clear();
     emit resourcesUpdated();
 }
 
@@ -204,7 +206,13 @@ void ResourcesServer::handleAuthRequest(QTcpSocket* client, const QJsonObject& j
     }
 
     QString username = json["username"].toString();
-    if (isPermittedUser(username) && !_clients.values().contains(username))
+    if (_clients.values().contains(username))
+    {
+        _clients.remove(client);
+        client->disconnectFromHost();
+        return;
+    }
+    if (isPermittedUser(username))
     {
         _clients[client] = username;
         qInfo() << "Клиент" << username << client->peerAddress().toString() << "авторизован";
